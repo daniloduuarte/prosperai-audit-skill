@@ -1,0 +1,36 @@
+{
+  "auditReportVersion": 2,
+  "vulnerabilities": {
+    "pacote-web": {
+      "name": "pacote-web",
+      "severity": "critical",
+      "isDirect": true,
+      "via": [{ "source": 1001, "name": "pacote-web", "title": "Execução remota de código em pacote-web", "severity": "critical", "range": "<2.0.1" }],
+      "effects": [],
+      "range": "<2.0.1",
+      "nodes": ["node_modules/pacote-web"],
+      "fixAvailable": true
+    },
+    "parser-qs": {
+      "name": "parser-qs",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [{ "source": 1002, "name": "parser-qs", "title": "Prototype pollution em parser-qs", "severity": "moderate" }],
+      "effects": ["pacote-web"],
+      "range": "<6.2.0",
+      "nodes": ["node_modules/parser-qs"],
+      "fixAvailable": { "name": "pacote-web", "version": "3.0.0", "isSemVerMajor": true }
+    },
+    "ferramenta-cli": {
+      "name": "ferramenta-cli",
+      "severity": "high",
+      "isDirect": true,
+      "via": ["glob-velho"],
+      "effects": [],
+      "range": "*",
+      "nodes": ["node_modules/ferramenta-cli"],
+      "fixAvailable": false
+    }
+  },
+  "metadata": { "vulnerabilities": { "info": 0, "low": 0, "moderate": 1, "high": 1, "critical": 1, "total": 3 } }
+}

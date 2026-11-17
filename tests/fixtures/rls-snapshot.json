@@ -1,0 +1,40 @@
+{
+  "_comment": "Banco fictício. Cada tabela exercita uma regra, em versão problemática e segura.",
+  "tables": [
+    { "name": "notas_soltas", "rls": false },
+    { "name": "clientes", "rls": true },
+    { "name": "catalogo", "rls": true },
+    { "name": "contatos_publicos", "rls": true },
+    { "name": "pedidos", "rls": true },
+    { "name": "faturas", "rls": true },
+    { "name": "logs_internos", "rls": true }
+  ],
+  "columns": [
+    { "table": "notas_soltas", "column": "id" },
+    { "table": "clientes", "column": "id" },
+    { "table": "clientes", "column": "email" },
+    { "table": "clientes", "column": "phone" },
+    { "table": "clientes", "column": "organization_id" },
+    { "table": "catalogo", "column": "id" },
+    { "table": "catalogo", "column": "nome" },
+    { "table": "catalogo", "column": "keyboard_layout" },
+    { "table": "contatos_publicos", "column": "api_key" },
+    { "table": "pedidos", "column": "id" },
+    { "table": "pedidos", "column": "organization_id" },
+    { "table": "faturas", "column": "id" },
+    { "table": "faturas", "column": "organization_id" },
+    { "table": "logs_internos", "column": "organization_id" }
+  ],
+  "policies": [
+    { "table": "clientes", "name": "leitura publica", "cmd": "SELECT", "roles": ["anon", "authenticated"], "qual": "true", "withCheck": null },
+    { "table": "clientes", "name": "membro le", "cmd": "SELECT", "roles": ["authenticated"], "qual": "is_member(organization_id)", "withCheck": null },
+    { "table": "catalogo", "name": "catalogo aberto", "cmd": "SELECT", "roles": ["public"], "qual": "true", "withCheck": null },
+    { "table": "contatos_publicos", "name": "so logado", "cmd": "SELECT", "roles": ["authenticated"], "qual": "true", "withCheck": null },
+    { "table": "contatos_publicos", "name": "insert anon", "cmd": "INSERT", "roles": ["anon"], "qual": null, "withCheck": "true" },
+    { "table": "pedidos", "name": "qualquer logado", "cmd": "ALL", "roles": ["authenticated"], "qual": "(auth.uid() IS NOT NULL)", "withCheck": null },
+    { "table": "faturas", "name": "membro da org", "cmd": "ALL", "roles": ["authenticated"], "qual": "(ORGANIZATION_ID IN ( SELECT m.organization_id FROM members m WHERE (m.user_id = ( SELECT auth.uid() AS uid))))", "withCheck": null }
+  ],
+  "definerFunctions": [
+    { "name": "buscar_cliente_por_email", "args": "p_email text" }
+  ]
+}
