@@ -7,10 +7,10 @@ import { spawnSync } from "node:child_process";
 
 export type CommandResult = { code: number | null; stdout: string; stderr: string; missing: boolean };
 
-const ALLOWED = new Set(["npm", "npx"]);
+const ALLOWED = new Set(["npm", "npx", "git"]);
 const SAFE_ARG = /^[A-Za-z0-9@._:/=-]+$/;
 
-export function runFixedCommand(cmd: "npm" | "npx", args: readonly string[], timeoutMs: number): CommandResult {
+export function runFixedCommand(cmd: "npm" | "npx" | "git", args: readonly string[], timeoutMs: number): CommandResult {
   if (!ALLOWED.has(cmd) || !args.every((a) => SAFE_ARG.test(a))) {
     throw new Error("Comando não permitido.");
   }

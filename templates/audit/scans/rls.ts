@@ -2,6 +2,7 @@ import type { AuditConfig } from "../config";
 import { fetchWithTimeout, isRecord, readJson } from "../http";
 import { safeError } from "../redact";
 import { env, skipped, type ScanOutcome } from "../types";
+import { parseMigrations, readMigrationFiles } from "./migracoes";
 import { analyzeRls, type RlsSnapshot } from "./rls-rules";
 
 /** Lê o catálogo do Postgres pela Management API do Supabase. Só SELECT
@@ -80,11 +81,27 @@ export async function fetchRlsSnapshot(ref: string, token: string): Promise<RlsS
   };
 }
 
+/** Sem token: lê só os arquivos de supabase/migrations (aproximação). */
+export function scanOffline(config: AuditConfig, why: string, cwd = process.cwd()): ScanOutcome {
+  const files = readMigrationFiles(cwd);
+  if (!files) return skipped(why);
+  const snapshot = parseMigrations(files);
+  return {
+    status: "ok",
+    summary: [
+      `MODO OFFLINE: lido só de supabase/migrations (${files.length} arquivo(s)); não vê mudanças feitas direto no painel. Para ler o banco real, configure SUPABASE_ACCESS_TOKEN`,
+      `${snapshot.tables.length} tabelas e ${snapshot.policies.length} policies reconstruídas`,
+      `Coluna de tenant verificada: ${config.tenantColumn}`,
+    ],
+    findings: analyzeRls(snapshot, config.tenantColumn),
+  };
+}
+
 export async function scanRls(config: AuditConfig): Promise<ScanOutcome> {
   const token = env("SUPABASE_ACCESS_TOKEN");
   const url = env("NEXT_PUBLIC_SUPABASE_URL") ?? env("SUPABASE_URL");
   const ref = env("SUPABASE_PROJECT_REF") ?? projectRefFromUrl(url);
-  if (!token) return skipped("SUPABASE_ACCESS_TOKEN não configurado (token pessoal do Supabase para a Management API).");
+  if (!token) return scanOffline(config, "SUPABASE_ACCESS_TOKEN não configurado (token pessoal do Supabase para a Management API).");
   if (!ref) {
     return skipped(
       "Não deu para descobrir o project ref: configure NEXT_PUBLIC_SUPABASE_URL (https://<ref>.supabase.co) ou SUPABASE_PROJECT_REF.",

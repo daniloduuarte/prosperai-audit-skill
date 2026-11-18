@@ -27,7 +27,7 @@ export function scanCodigo(config: AuditConfig, cwd = process.cwd()): ScanOutcom
   let ran = 0;
 
   if (existsSync(path.join(cwd, "tsconfig.json"))) {
-    const r = runFixedCommand("npx", ["--no-install", "tsc", "--noEmit", "--pretty", "false"], TEN_MIN);
+    const r = runFixedCommand("npx", ["--no-install", "tsc", "--noEmit", "--incremental", "false", "--pretty", "false"], TEN_MIN);
     const out = `${r.stdout}\n${r.stderr}`;
     if (r.missing || (r.code !== 0 && notInstalled(out) && !/error TS/.test(out))) {
       summary.push("tsc: pulado (typescript não instalado; rode npm ci antes)");

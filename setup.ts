@@ -28,8 +28,8 @@ export const ACTIONS = {
   uploadArtifact: "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2",
 };
 export const AUDIT_FILES = [
-  "types.ts", "config.ts", "http.ts", "exec.ts", "redact.ts", "report.ts", "notify.ts", "run.ts",
-  "scans/rls.ts", "scans/rls-rules.ts", "scans/deps.ts", "scans/saude.ts",
+  "types.ts", "config.ts", "http.ts", "exec.ts", "fix-deps.ts", "redact.ts", "report.ts", "notify.ts", "run.ts",
+  "scans/rls.ts", "scans/rls-rules.ts", "scans/migracoes.ts", "scans/deps.ts", "scans/saude.ts",
   "scans/forca-bruta.ts", "scans/logs.ts", "scans/codigo.ts",
 ];
 const TENANT_CANDIDATES = ["organization_id", "tenant_id", "company_id", "org_id", "workspace_id", "account_id", "team_id"];

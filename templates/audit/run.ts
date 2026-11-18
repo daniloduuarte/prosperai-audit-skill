@@ -1,9 +1,10 @@
 import { appendFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
+import { fixDeps } from "./fix-deps";
 import { loadConfig, type AuditConfig, type ScanId } from "./config";
 import { notify } from "./notify";
 import { log, safeError } from "./redact";
-import { buildMarkdown, computeScore, countBySeverity } from "./report";
+import { buildHtml, buildMarkdown, computeScore, countBySeverity } from "./report";
 import { scanCodigo } from "./scans/codigo";
 import { scanDeps } from "./scans/deps";
 import { scanForcaBruta } from "./scans/forca-bruta";
@@ -62,6 +63,9 @@ async function main(): Promise<number> {
   const reportPath = path.resolve(env("AUDIT_REPORT_PATH") ?? "audit-report.md");
   writeFileSync(reportPath, markdown, "utf-8");
   log.info(`Relatório salvo em ${reportPath}`);
+  const htmlPath = reportPath.replace(/\.md$/i, "") + ".html";
+  writeFileSync(htmlPath, buildHtml(results, { projectName: config.projectName, date: new Date(), warnings, runUrl: runUrl() }), "utf-8");
+  log.info(`Versão para navegador: ${htmlPath}`);
   const counts = countBySeverity(results);
   const score = computeScore(results);
   const stepSummary = env("GITHUB_STEP_SUMMARY");
@@ -79,6 +83,11 @@ async function main(): Promise<number> {
   return 0;
 }
 
+if (process.argv.includes("--fix-deps")) {
+  const r = fixDeps();
+  log.info(`Correção de dependências: ${r.status}. ${r.detail}`);
+  process.exitCode = r.status === "revertido" ? 1 : 0;
+} else
 main()
   .then((code) => {
     process.exitCode = code;

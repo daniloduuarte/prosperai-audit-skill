@@ -43,8 +43,13 @@ A auditoria NÃO usa `SUPABASE_SERVICE_ROLE_KEY`. Não peça nem adicione essa c
 - NUNCA aplique correção sem pedir. Apresente: o achado, a evidência, a correção proposta (SQL ou diff) e o risco de quebrar algo. Espere o "pode".
 - Mudança de RLS ou de função vai como migration nova em `supabase/migrations/`, testada em banco local antes de produção. Nunca rode SQL direto na produção.
 - Antes de remover uma policy `using (true)`, confira quem depende dela (páginas públicas sem login costumam depender).
-- Dependência: prefira `npm audit fix` sem `--force`; versão major exige ler o changelog e rodar os testes.
+- Dependência: com o pedido do usuário, `npx tsx lib/audit/run.ts --fix-deps` (npm audit fix sem `--force`, desfaz se os tipos piorarem, sem commit nem push); ou versão major exige ler o changelog e rodar os testes.
 - Depois de corrigir, rode a auditoria de novo e mostre a diferença de nota.
+
+## Modo offline e relatório HTML
+
+- Sem `SUPABASE_ACCESS_TOKEN`, o scan de RLS lê só `supabase/migrations` (a linha de resumo começa com MODO OFFLINE). Não vê o que foi mudado direto no painel: avise o usuário.
+- O relatório sai também em `audit-report.html`, para abrir no navegador.
 
 ## Limites
 

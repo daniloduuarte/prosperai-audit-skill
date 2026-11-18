@@ -4,6 +4,23 @@ Auditoria semanal de segurança para SaaS multi-tenant em Next.js + Supabase, pe
 
 Nasceu no [Prosperaí](https://prosperai.online), um sistema de agenda para negócios de atendimento, onde um vazamento de dados entre empresas seria o pior erro possível. O código deste repositório é genérico: não tem nada específico daquele produto.
 
+> **Se você usa uma IA de código (Claude Code ou Codex), peça a ela: "siga o `INSTALAR-COM-IA.md` deste repositório".** Ela instala tudo sozinha e só pergunta o que não souber.
+
+## Cole na sua IA
+
+1. Abra o Claude Code ou o Codex **dentro da pasta do seu projeto**.
+2. Cole este texto:
+
+```
+Instale a skill de https://github.com/daniloduuarte/prosperai-audit-skill no meu projeto. Siga o arquivo INSTALAR-COM-IA.md do repositório.
+```
+
+3. Responda às perguntas que ela fizer. No fim ela explica, em português simples, o que criou e o que você precisa fazer no GitHub.
+
+O caminho manual (para quem prefere) está mais abaixo, a partir de "Instalação em 3 passos".
+
+---
+
 ## Instalação em 3 passos
 
 Requisitos: Node 20 ou mais novo, projeto com `package.json` (npm), repositório no GitHub.
@@ -40,7 +57,7 @@ Depois faça commit (coloque `audit-report.md` no `.gitignore`), push, e dispare
 
 | Scan | O que confere | Precisa de |
 |---|---|---|
-| RLS e isolamento | Tabelas do schema `public` sem RLS (crítico); policy `using (true)` para anon/public em tabela com coluna sensível como email, cpf, cnpj, token, senha, phone, secret, key (alto); tabela com a coluna de tenant em que nenhuma policy usa essa coluna (médio); função `SECURITY DEFINER` executável por anon (médio) | `SUPABASE_ACCESS_TOKEN` e `NEXT_PUBLIC_SUPABASE_URL` (ou `SUPABASE_PROJECT_REF`) |
+| RLS e isolamento | Tabelas do schema `public` sem RLS (crítico); policy `using (true)` para anon/public em tabela com coluna sensível como email, cpf, cnpj, token, senha, phone, secret, key (alto); tabela com a coluna de tenant em que nenhuma policy usa essa coluna (médio); função `SECURITY DEFINER` executável por anon (médio) | `SUPABASE_ACCESS_TOKEN` e `NEXT_PUBLIC_SUPABASE_URL` (ou `SUPABASE_PROJECT_REF`). **Sem token, roda em modo offline:** lê os arquivos de `supabase/migrations` (mesmas regras, mas não vê mudanças feitas direto no painel) |
 | Dependências | `npm audit` separando produção de dev, e `npm outdated` | `package-lock.json` |
 | Saúde | GET no app (status, tempo, cabeçalhos de segurança) e HEAD na API REST do Supabase | `DEPLOYED_APP_URL` e/ou `NEXT_PUBLIC_SUPABASE_URL` |
 | Força bruta (opcional) | Chaves de rate limit no Upstash Redis acima do limite configurado | `KV_REST_API_URL` e `KV_REST_API_READ_ONLY_TOKEN` |
@@ -51,7 +68,7 @@ Notificação (opcional): e-mail via Resend (`RESEND_API_KEY`, `NOTIFY_EMAIL`, `
 
 ## Relatório
 
-Sai em `audit-report.md`, no resumo da execução do GitHub Actions e no artefato `audit-report`. Cada achado traz o quê, onde, por que importa e como corrigir. Exemplo com dados fictícios:
+Sai em `audit-report.md` e `audit-report.html` (a mesma coisa, para abrir no navegador), no resumo da execução do GitHub Actions e no artefato `audit-report`. Cada achado traz o quê, onde, por que importa e como corrigir. Exemplo com dados fictícios:
 
 ```markdown
 # Auditoria de loja-exemplo
@@ -84,7 +101,7 @@ Crítico: 0 · Alto: 2 · Médio: 1 · Baixo: 0 · Info: 1
 - **Sem service role.** A auditoria NÃO usa `SUPABASE_SERVICE_ROLE_KEY` e não precisa dela. Não cadastre essa chave para isso.
 - **Só leitura.** O scan de RLS manda à Management API apenas consultas `select` fixas, escritas no código (nenhum valor da configuração entra no SQL), pedindo execução somente leitura. O Redis recebe só `SCAN`, `TYPE`, `ZCARD` e `GET`.
 - **Segredos nunca aparecem.** Todo texto de log, relatório, e-mail e Slack passa por uma redação que remove o valor de toda variável com nome de segredo e formatos conhecidos de token (JWT, `sbp_`, Bearer, webhook do Slack, URL com senha). IPs e e-mails do scan de força bruta saem mascarados.
-- **Sem comando vindo de fora.** Os únicos comandos executados são `npm` e `npx` com argumentos fixos no código (lista branca); nada vindo de API, banco ou configuração vira comando. Sem `eval`.
+- **Sem comando vindo de fora.** Os únicos comandos executados são `npm`, `npx` e `git` (este só em `--fix-deps`) com argumentos fixos no código (lista branca); nada vindo de API, banco ou configuração vira comando. Sem `eval`.
 - **Dados só para quem você configurou.** As chamadas vão para: Management API do Supabase, sua URL do Supabase, sua URL do app, seu Redis, a API da Vercel, a Resend e o seu webhook do Slack. O `npm audit` envia a lista de dependências ao registro do npm (comportamento normal do npm).
 - **Workflow:** actions fixadas por SHA, `permissions: contents: read`, `persist-credentials: false`, segredos só no passo da auditoria (não no `npm ci`), tempo limite de 20 minutos.
 
@@ -104,6 +121,7 @@ Permissão mínima de cada token:
 
 ```bash
 npx tsx lib/audit/run.ts
+npx tsx lib/audit/run.ts --fix-deps   # opcional: npm audit fix (nunca --force), desfaz se os tipos piorarem, sem commit nem push
 npx tsx --env-file=.env.local lib/audit/run.ts   # carrega variáveis do .env.local (Node 20.6+)
 ```
 
