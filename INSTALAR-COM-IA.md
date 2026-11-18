@@ -49,7 +49,7 @@ O instalador detecta sozinho: nome do projeto, Next.js, Supabase, coluna de tena
 
 | Dúvida | Como perguntar | Padrão |
 |---|---|---|
-| E-mail do relatório | "Para qual e-mail você quer receber o relatório?" | Em branco (use o secret `NOTIFY_EMAIL`). Se for repositório público, deixe em branco |
+| E-mail do relatório | "Para qual e-mail você quer receber o relatório?" (avise que o envio só funciona depois de ela criar uma conta gratuita no Resend e cadastrar a chave `RESEND_API_KEY` como secret no GitHub; sem isso o relatório fica no resumo da execução e no arquivo) | Em branco (use o secret `NOTIFY_EMAIL`). Se for repositório público, deixe em branco |
 | Repositório público? | "O seu projeto no GitHub é público (qualquer um vê) ou privado?" | Se ela não souber: trate como privado, mas avise que vai conferir; se `gh repo view --json isPrivate` responder, use a resposta |
 | Coluna que separa uma empresa da outra | Só pergunte se não detectou: "No seu banco, qual coluna diz de qual empresa/cliente é cada linha?" | `organization_id` |
 | Scans ligados | Não pergunte; use o detectado (o instalador liga só o que faz sentido) | detectado |

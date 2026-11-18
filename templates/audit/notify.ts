@@ -11,7 +11,8 @@ export type NotifySummary = { score: number; critical: number; high: number; run
 export async function sendEmail(config: AuditConfig, markdown: string, s: NotifySummary): Promise<string> {
   const key = env("RESEND_API_KEY");
   const to = env("NOTIFY_EMAIL") ?? (config.notifyEmail || undefined);
-  if (!key || !to) return "e-mail: não configurado (RESEND_API_KEY e NOTIFY_EMAIL)";
+  if (!key) return "e-mail: não enviado (falta o secret RESEND_API_KEY: o envio usa uma conta gratuita no Resend)";
+  if (!to) return "e-mail: não enviado (falta o destinatário: notifyEmail no audit.config.json ou o secret NOTIFY_EMAIL)";
   const from = env("RESEND_FROM") ?? "Auditoria <onboarding@resend.dev>";
   try {
     const res = await fetchWithTimeout("https://api.resend.com/emails", {
